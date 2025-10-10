@@ -13,15 +13,19 @@ RUN cd /etc/yum.repos.d/ && \
 RUN yum install -y httpd zip unzip curl && \
     yum clean all
 
-# Download and unzip template
+# Set working directory
 WORKDIR /var/www/html/
-ADD https://www.free-css.com/assets/files/free-css-templates/download/page254/photogenic.zip /var/www/html/
-RUN unzip photogenic.zip && \
-    cp -rvf photogenic/* . && \
-    rm -rf photogenic photogenic.zip
 
-# Expose port 80
-EXPOSE 80 22
+# Copy the downloaded zip file from your host into the container
+COPY photogenic-master.zip .
 
-# Start Apache in foreground
+# Unzip and move contents
+RUN unzip photogenic-master.zip && \
+    cp -rvf photogenic-master/* . && \
+    rm -rf photogenic-master photogenic-master.zip
+
+# Expose port 80 for HTTP
+EXPOSE 80
+
+# Start Apache in the foreground
 CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
