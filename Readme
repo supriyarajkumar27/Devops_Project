@@ -1,0 +1,32 @@
+# 🚀 DevOps End-to-End CI/CD Pipeline
+
+## 📘 Project Overview
+This project implements a **complete CI/CD workflow** using **Jenkins**, **Docker**, **Ansible**, and **Kubernetes**.  
+It automates the process of:
+1. Pulling source code from GitHub  
+2. Building and tagging Docker images on the Ansible server  
+3. Pushing the image to Docker Hub  
+4. Copying deployment files to the Kubernetes server  
+5. Deploying the latest version to the Kubernetes cluster  
+
+---
+
+## 🧩 Technologies Used
+- **Jenkins** – Continuous Integration and Deployment
+- **Ansible Server (13.71.29.243)** – Docker image build and versioning
+- **Kubernetes Server (74.225.175.155)** – Application deployment
+- **Docker Hub (madival)** – Image registry
+- **GitHub Repository:** [Devops_Project](https://github.com/supriyarajkumar27/Devops_Project.git)
+
+---
+
+## ⚙️ CI/CD Workflow Summary
+
+### 1️⃣ Git Checkout
+- Jenkins clones the source code from GitHub using the repository URL.
+- This ensures the latest application code is always fetched before build.
+
+```groovy
+stage("Git Checkout") {
+  git 'https://github.com/supriyarajkumar27/Devops_Project.git'
+}
