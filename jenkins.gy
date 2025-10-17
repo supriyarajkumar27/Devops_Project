@@ -1,0 +1,43 @@
+node {
+    stage ("git checkout") {
+      git 'https://github.com/supriyarajkumar27/Devops_Project.git'
+    }
+    stage ("configuring ansible using ssh") {
+          sshagent(['ansible-demo']) {
+    sh 'ssh -o StrictHostKeyChecking=no demo@13.71.29.243 "echo Connected successfully"'
+    sh 'scp /var/lib/jenkins/workspace/pipeline-demo/* demo@13.71.29.243:/home/demo/'
+         }
+    }
+    stage ("Docker build image")
+         sshagent(['ansible-demo']) {
+    sh 'ssh -o StrictHostKeyChecking=no demo@13.71.29.243 cd /home/demo/'
+    sh 'ssh -o StrictHostKeyChecking=no demo@13.71.29.243 docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+   }
+   stage("Docker image tagging")
+         sshagent(['ansible-demo']) {
+    sh 'ssh -o StrictHostKeyChecking=no demo@13.71.29.243 cd /home/demo/'
+    sh 'ssh -o StrictHostKeyChecking=no demo@13.71.29.243 docker image tag $JOB_NAME:v1.$BUILD_ID madival/$JOB_NAME:latest'
+         }
+   stage(" push image to Docker hub")
+        sshagent(['ansible-demo']) {
+               withCredentials([string(credentialsId: 'Docker_passwd', variable: 'docker_passwd')]) {
+               sh "ssh -o StrictHostKeyChecking=no demo@13.71.29.243 docker login -u madival -p ${docker_passwd}"
+               sh 'ssh -o StrictHostKeyChecking=no demo@13.71.29.243 docker image push madival/$JOB_NAME:latest'
+    
+       }
+   }
+   stage("copy files from ansible to kubernetes server")
+       sshagent(['kubernetes_server']) {
+           sh 'ssh -o StrictHostKeyChecking=no demo@74.225.175.155'
+           sh 'scp /var/lib/jenkins/workspace/pipeline-demo/* demo@74.225.175.155:/home/demo/'
+       
+}
+  stage("Deploying files in kubernetes server ")
+       sshagent(['kubernetes_server']) {
+           sh 'ssh -o StrictHostKeyChecking=no demo@74.225.175.155 cd /home/demo'
+           sh 'ssh -o StrictHostKeyChecking=no demo@74.225.175.155 kubectl apply -f Deployment.yaml'
+           sh 'ssh -o StrictHostKeyChecking=no demo@74.225.175.155 kubectl apply -f Service.yaml'
+           
+           
+  }
+}
